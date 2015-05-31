@@ -102,8 +102,8 @@ var Game = React.createClass({
 
   initializeTurn: function() {
     var markIndex = '';
-    var winAttempt = this.aiAttemptVictory();
-    var preventDefeat = this.aiPreventDefeat();
+    var winAttempt = this.planMove(GridHelper.offensiveLanes(), this.state.aiMark, this.state.playerMark);
+    var preventDefeat = this.planMove(GridHelper.allLanes(), this.state.playerMark, this.state.aiMark);
     var newGrid = this.state.gridMarks.slice();
 
     if (this.state.aiWinPossible && winAttempt) { // Attempt to win if possible
@@ -127,63 +127,47 @@ var Game = React.createClass({
       return indices.find(function(cell) {
         return lane.indexOf(cell) > -1;
       });
+
     } else {
       return false;
+
     }
   },
 
-  aiPreventDefeat: function() {
+  planMove: function(lanesToParse, markerToScan, markerToIgnore) {
     var unmarkedIndices = [];
-    var dangerLane = GridHelper.allLanes().find(function(cells) {
+    var centerCell = 4;
+
+    if (this.state.turn === 1 && this.state.gridMarks[centerCell] === '') {
+      return centerCell;
+    }
+
+    var lane = lanesToParse.find(function(cells) {
       var counter = 0;
 
       for (var i = 0; len = cells.length, i < len; i++) {
-        if (this.state.gridMarks[cells[i]] === this.state.aiMark) {
+        if (this.state.gridMarks[cells[i]] === markerToIgnore) {
           break;
-        } else if (this.state.gridMarks[cells[i]] === this.state.playerMark) {
+
+        } else if (this.state.gridMarks[cells[i]] === markerToScan) {
           counter++;
+
         } else {
           unmarkedIndices.push(cells[i]);
+
         }
       }
 
       return counter === 2
     }.bind(this));
 
-    return this.aiAttemptDecisiveAction(dangerLane, unmarkedIndices);
-  },
+    debugger
 
-  // iterate over possible lanes, check if any lane has two aiMarks and zero playermarks. if not, return false. else, return integer (index)
-  aiAttemptVictory: function() {
-    {/* Take center piece if human doesn't take it */}
-    if (this.state.turn === 1 && this.state.gridMarks[4] === '') {
-      return 4
-    } else {
-      {/* Iterate over offensive lanes, if any of them have two AIs and no Human marks, return that, else false */}
-
-      var unmarkedIndices = [];
-      var winningLane = GridHelper.offensiveLanes().find(function(cells) {
-        var counter = 0;
-
-        for (var i = 0; len = cells.length, i < len; i++) {
-          if (this.state.gridMarks[cells[i]] === this.state.playerMark) {
-            break;
-          } else if (this.state.gridMarks[cells[i]] === this.state.aiMark) {
-            counter++;
-          } else {
-            unmarkedIndices.push(cells[i]);
-          }
-        }
-
-        return counter === 2
-      }.bind(this));
-
-      return this.aiAttemptDecisiveAction(winningLane, unmarkedIndices);
-    }
+    return this.aiAttemptDecisiveAction(lane, unmarkedIndices);
   },
 
   aiExecuteNeutralManeuver: function() {
-    GridHelper.cornerCells.find(function(cell) {
+    return GridHelper.cornerCells().find(function(cell) {
       var cellValue = this.state.gridMarks[cell];
 
       return (cellValue === '' || !cellValue === this.state.playerMark);
