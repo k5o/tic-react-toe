@@ -3,7 +3,7 @@ var Game = React.createClass({
     return {
       gridMarks: ['', '', '', '', '', '', '', '', ''],
       turn: 0,
-      previousMove: '',
+      previousPlayerMoves: [],
       playerMark: this.props.playerMark,
       aiMark: this.props.aiMark,
       isHumanTurn: true,
@@ -37,14 +37,16 @@ var Game = React.createClass({
   updateGrid: function(index) {
     if (this.state.isHumanTurn && !this.state.gameOver) {
       var newGrid = this.state.gridMarks.slice();
+      var movesArray = this.state.previousPlayerMoves;
 
       newGrid[index] = this.state.playerMark;
+      movesArray.push(index);
 
       this.setState({
         gridMarks: newGrid,
         isHumanTurn: !this.state.isHumanTurn,
         turn: this.state.turn + 1,
-        previousMove: index
+        previousPlayerMoves: movesArray
       })
     } else {
       return false;
@@ -72,34 +74,31 @@ var Game = React.createClass({
 
   endGame: function(mark) {
     var resetMessage = " Click Reset to play again.";
+    var options = {
+      confirmButtonText: "Ok",
+      confirmButtonColor: "#81D4FA",
+      allowOutsideClick: true
+    };
 
     if (mark === aiMark) {
-      swal({
-        title: "You Lose!",
-        text: "Game Theory Optimal Bot can't be beaten!" + resetMessage,
-        type: "error",
-        confirmButtonText: "Ok",
-        confirmButtonColor: "#81D4FA",
-        allowOutsideClick: true
-      });
+      options["title"] = "You Lose!";
+      options["text"] = "Game Theory Optimal Bot can't be beaten!" + resetMessage;
+      options["type"] = "error";
+
+      swal(options);
+
     } else if (mark === playerMark) {
-      swal({
-        title: "You Win!",
-        text: "You won! Nice Hax." + resetMessage,
-        type: "success",
-        confirmButtonText: "Ok",
-        confirmButtonColor: "#81D4FA",
-        allowOutsideClick: true
-      });
+      options["title"] = "You Win!";
+      options["text"] = "You won! Nice Hax." + resetMessage;
+      options["type"] = "success";
+
+      swal(options);
 
     } else if (!mark) {
-      swal({
-        title: "Draw!",
-        text: "Is that the best you can do?" + resetMessage,
-        confirmButtonText: "Ok",
-        confirmButtonColor: "#81D4FA",
-        allowOutsideClick: true
-      });
+      options["title"] = "Draw!";
+      options["text"] = "Is that the best you can do?" + resetMessage;
+
+      swal(options);
 
     }
 
@@ -108,29 +107,30 @@ var Game = React.createClass({
 
   initializeTurn: function() {
     var markIndex = '';
-    var winAttempt = this.planMove(GridHelper.allLanes(), this.state.aiMark, this.state.playerMark);
-    var preventDefeat = this.planMove(GridHelper.allLanes(), this.state.playerMark, this.state.aiMark);
+    var winAttempt = this.planMove(this.state.aiMark, this.state.playerMark);
+    var preventDefeat = this.planMove(this.state.playerMark, this.state.aiMark);
     var newGrid = this.state.gridMarks.slice();
 
-    if (winAttempt) { // Attempt to win if possible
+    if (winAttempt) { // Attempt to win (or take center cell) if possible
       markIndex = winAttempt;
 
-    } else if (preventDefeat) { // Block player win attempt
+    } else if (preventDefeat) { // Block player win attempt if any
       markIndex = preventDefeat;
 
-    } else { // Take a blocking corner
+    } else { // Take a blocking corner or any remaining cell
       markIndex = this.aiRespondWithClosest();
 
     }
 
     newGrid[markIndex] = this.state.aiMark;
 
-    this.setState({gridMarks: newGrid, previousMove: markIndex});
+    this.setState({gridMarks: newGrid});
   },
 
-  planMove: function(lanesToParse, markerToScan, markerToIgnore) {
+  planMove: function(markerToScan, markerToIgnore) {
     var unmarkedIndices = [];
     var centerCell = 4;
+    var lanesToParse = GridHelper.allLanes();
 
     if (this.state.turn === 1 && this.state.gridMarks[centerCell] === '') {
       return centerCell;
@@ -165,22 +165,30 @@ var Game = React.createClass({
     }
   },
 
+  // If there is no win or defeat condition available, AI needs to figure out the next best move
+  // The next best move is as prioritized:
+  // 1. Prevent potential forks on turn 3 by taking a blocking corner
+  // 2. Take a corner
+  // 3. Take anything left available (the game is destined for a draw by this point)
   aiRespondWithClosest: function() {
-    var previousMove = this.state.previousMove;
+    var previousPlayerMoves = this.state.previousPlayerMoves.slice(-2);
+    var lastMove = previousPlayerMoves[0];
+    var secondToLastMove = previousPlayerMoves[1];
+    var diff = Math.abs(lastMove - secondToLastMove);
     var cornerCells = GridHelper.cornerCells();
     var takeCornerCell;
 
-    // Respond with blocking corner to prevent knight-shaped pincer
-    if (previousMove < 4) {
+    if (this.state.turn === 3 && (diff === 5 || diff === 7)) { // Prevent fork threats which only occur on turn 3
+      takeCornerCell = GridHelper.findOptimalCornerCell(lastMove, secondToLastMove);
+    } else if (lastMove < 4) { // Otherwise choose an open corner
       takeCornerCell = cornerCells.slice(0, 2).find(this.isCellAvailable);
     } else {
       takeCornerCell = cornerCells.slice(2).find(this.isCellAvailable);
     }
 
-
     if (takeCornerCell > -1) { // Favor corner cells
       return takeCornerCell;
-    } else { // Fallback to any cell
+    } else { // Otherwise fall back to any cell
       return this.state.gridMarks.findIndex(this.isCellEmpty);
     }
   },

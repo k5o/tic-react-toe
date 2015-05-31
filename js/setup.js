@@ -48,3 +48,9 @@ if (!Array.prototype.findIndex) {
     return -1;
   };
 }
+
+Array.prototype.getIntersection = function(comparisonArray) {
+  return this.filter(function(n) {
+    return comparisonArray.indexOf(n) != -1
+  });
+};
