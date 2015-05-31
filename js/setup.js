@@ -50,7 +50,7 @@ if (!Array.prototype.findIndex) {
 }
 
 Array.prototype.getIntersection = function(comparisonArray) {
-  return this.filter(function(n) {
+  return this.find(function(n) {
     return comparisonArray.indexOf(n) != -1
   });
 };

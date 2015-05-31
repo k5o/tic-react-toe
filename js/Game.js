@@ -178,18 +178,23 @@ var Game = React.createClass({
     var cornerCells = GridHelper.cornerCells();
     var takeCornerCell;
 
-    if (this.state.turn === 3 && (diff === 5 || diff === 7)) { // Prevent fork threats which only occur on turn 3
-      takeCornerCell = GridHelper.findOptimalCornerCell(lastMove, secondToLastMove);
+    if (this.state.turn === 3 && (diff >= 4 && diff <= 8)) { // Prevent fork threats which only occur on turn 3
+      takeCornerCell = GridHelper.findOptimalBlockingCell(lastMove, secondToLastMove);
+
     } else if (lastMove < 4) { // Otherwise choose an open corner
       takeCornerCell = cornerCells.slice(0, 2).find(this.isCellAvailable);
+
     } else {
       takeCornerCell = cornerCells.slice(2).find(this.isCellAvailable);
+
     }
 
     if (takeCornerCell > -1) { // Favor corner cells
       return takeCornerCell;
+
     } else { // Otherwise fall back to any cell
       return this.state.gridMarks.findIndex(this.isCellEmpty);
+
     }
   },
 
