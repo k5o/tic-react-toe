@@ -26,6 +26,6 @@ var GridHelper = {
   },
 
   cornerCells: function() {
-    return [0, 2, 4, 8];
+    return [0, 2, 6, 8];
   }
 }
