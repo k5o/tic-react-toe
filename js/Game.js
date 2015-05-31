@@ -172,25 +172,26 @@ var Game = React.createClass({
   // 3. Take anything left available (the game is destined for a draw by this point)
   aiRespondWithClosest: function() {
     var previousPlayerMoves = this.state.previousPlayerMoves.slice(-2);
-    var lastMove = previousPlayerMoves[0];
-    var secondToLastMove = previousPlayerMoves[1];
+    var secondToLastMove = previousPlayerMoves[0];
+    var lastMove = previousPlayerMoves[1];
     var diff = Math.abs(lastMove - secondToLastMove);
     var cornerCells = GridHelper.cornerCells();
-    var takeCornerCell;
+    var takeOptimalCell;
+    var forkConditionsPossible = this.state.turn === 3 && secondToLastMove !== 4 && (diff >= 4 && diff <= 8);
 
-    if (this.state.turn === 3 && (diff >= 4 && diff <= 8)) { // Prevent fork threats which only occur on turn 3
-      takeCornerCell = GridHelper.findOptimalBlockingCell(lastMove, secondToLastMove);
+    if (forkConditionsPossible) { // Prevent fork threats
+      takeOptimalCell = GridHelper.findOptimalBlockingCell(lastMove, secondToLastMove);
 
     } else if (lastMove < 4) { // Otherwise choose an open corner
-      takeCornerCell = cornerCells.slice(0, 2).find(this.isCellAvailable);
+      takeOptimalCell = cornerCells.slice(0, 2).find(this.isCellAvailable);
 
     } else {
-      takeCornerCell = cornerCells.slice(2).find(this.isCellAvailable);
+      takeOptimalCell = cornerCells.slice(2).find(this.isCellAvailable);
 
     }
 
-    if (takeCornerCell > -1) { // Favor corner cells
-      return takeCornerCell;
+    if (takeOptimalCell > -1) { // Favor corner cells
+      return takeOptimalCell;
 
     } else { // Otherwise fall back to any cell
       return this.state.gridMarks.findIndex(this.isCellEmpty);

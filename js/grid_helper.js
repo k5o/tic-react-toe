@@ -19,6 +19,7 @@ var GridHelper = {
   },
 
   // If player takes the cell passed into the function, the return are the cells the AI bot must block
+  // case 4 is skipped intentionally because a fork isn't possible with the center cell
   bestMovesForTakenCell: function(cell) {
     switch (cell) {
       case 0:
@@ -29,7 +30,7 @@ var GridHelper = {
         return [1, 0, 8]
       case 3:
         return [0, 6]
-      case 5: // skip 4 intentionally, cannot make pincer with center cell
+      case 5:
         return [2, 8]
       case 6:
         return [1, 0, 8]
