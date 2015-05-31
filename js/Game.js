@@ -74,13 +74,32 @@ var Game = React.createClass({
     var resetMessage = " Click Reset to play again.";
 
     if (mark === aiMark) {
-      alert("You lost! Game Theory Optimal Bot can never lose!" + resetMessage);
-
+      swal({
+        title: "You Lose!",
+        text: "Game Theory Optimal Bot can't be beaten!" + resetMessage,
+        type: "error",
+        confirmButtonText: "Ok",
+        confirmButtonColor: "#81D4FA",
+        allowOutsideClick: true
+      });
     } else if (mark === playerMark) {
-      alert("You won! Nice Hax." + resetMessage);
+      swal({
+        title: "You Win!",
+        text: "You won! Nice Hax." + resetMessage,
+        type: "success",
+        confirmButtonText: "Ok",
+        confirmButtonColor: "#81D4FA",
+        allowOutsideClick: true
+      });
 
     } else if (!mark) {
-      alert("Draw! Is that the best you can do?" + resetMessage);
+      swal({
+        title: "Draw!",
+        text: "Is that the best you can do?" + resetMessage,
+        confirmButtonText: "Ok",
+        confirmButtonColor: "#81D4FA",
+        allowOutsideClick: true
+      });
 
     }
 
