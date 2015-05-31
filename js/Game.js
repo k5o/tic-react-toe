@@ -11,23 +11,6 @@ var Game = React.createClass({
     }
   },
 
-  updateGrid: function(index) {
-    if (this.state.isHumanTurn && !this.state.gameOver) {
-      var newGrid = this.state.gridMarks.slice();
-
-      newGrid[index] = this.state.playerMark;
-
-      this.setState({
-        gridMarks: newGrid,
-        isHumanTurn: !this.state.isHumanTurn,
-        turn: this.state.turn + 1,
-        previousMove: index
-      })
-    } else {
-      return false;
-    }
-  },
-
   componentDidUpdate: function() {
     if (!this.state.gameOver) {
       if (this.state.turn > 5) {
@@ -45,18 +28,21 @@ var Game = React.createClass({
     }
   },
 
-  render: function() {
-    var grid = []
+  updateGrid: function(index) {
+    if (this.state.isHumanTurn && !this.state.gameOver) {
+      var newGrid = this.state.gridMarks.slice();
 
-    for (var i = 0; len = this.state.gridMarks.length, i < len; i++) {
-      grid.push(<Cell key={i} index={i} mark={this.state.gridMarks[i]} handleClick={this.updateGrid} />)
+      newGrid[index] = this.state.playerMark;
+
+      this.setState({
+        gridMarks: newGrid,
+        isHumanTurn: !this.state.isHumanTurn,
+        turn: this.state.turn + 1,
+        previousMove: index
+      })
+    } else {
+      return false;
     }
-
-    return (
-      <div className="grid">
-        {grid}
-      </div>
-    )
   },
 
   checkWinCondition: function() {
@@ -107,26 +93,16 @@ var Game = React.createClass({
     } else if (preventDefeat) { // Block player win attempt
       markIndex = preventDefeat;
 
-    } else { // Take a corner
+    } else { // Take a blocking corner
       markIndex = this.aiRespondWithClosest();
 
     }
 
+    debugger
+
     newGrid[markIndex] = this.state.aiMark;
 
     this.setState({gridMarks: newGrid, previousMove: markIndex});
-  },
-
-  aiAttemptDecisiveAction: function(lane, indices) {
-    if (lane && indices) {
-      return indices.find(function(cell) {
-        return lane.indexOf(cell) > -1;
-      });
-
-    } else {
-      return false;
-
-    }
   },
 
   planMove: function(lanesToParse, markerToScan, markerToIgnore) {
@@ -156,18 +132,34 @@ var Game = React.createClass({
       return counter === 2
     }.bind(this));
 
-    debugger
-
-    return this.aiAttemptDecisiveAction(lane, unmarkedIndices);
+    // Attempt an advantageous action if possible
+    if (lane && unmarkedIndices) {
+      return unmarkedIndices.find(function(cell) {
+        return lane.indexOf(cell) > -1;
+      });
+    } else {
+      return false;
+    }
   },
 
   aiRespondWithClosest: function() {
     var previousMove = this.state.previousMove;
+    var cornerCells = GridHelper.cornerCells();
+    var takeCornerCell;
 
     if (previousMove < 4) {
-      return GridHelper.cornerCells().slice(0, 2).find(this.isCellAvailable);
+      takeCornerCell = cornerCells.slice(0, 2).find(this.isCellAvailable);
     } else {
-      return GridHelper.cornerCells().slice(2).find(this.isCellAvailable);
+      takeCornerCell = cornerCells.slice(2).find(this.isCellAvailable);
+    }
+
+
+    if (takeCornerCell > -1) { // Favor corner cells
+      debugger
+      return takeCornerCell;
+    } else { // Fallback to any cell
+      debugger
+      return this.state.gridMarks.findIndex(this.isCellEmpty);
     }
   },
 
@@ -175,6 +167,24 @@ var Game = React.createClass({
     var cellValue = this.state.gridMarks[cell];
 
     return (cellValue === '' || !cellValue === this.state.playerMark);
+  },
+
+  isCellEmpty: function(cellValue) {
+    return cellValue === '';
+  },
+
+  render: function() {
+    var grid = []
+
+    for (var i = 0; len = this.state.gridMarks.length, i < len; i++) {
+      grid.push(<Cell key={i} index={i} mark={this.state.gridMarks[i]} handleClick={this.updateGrid} />)
+    }
+
+    return (
+      <div className="grid">
+        {grid}
+      </div>
+    )
   }
 
 });
