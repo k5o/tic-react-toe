@@ -1,0 +1,21 @@
+.grid {
+  width: 100%;
+  max-width: 960px;
+}
+
+.cell {
+  display: inline-block;
+  border: 1px solid white;
+  background: #ccc;
+  position: relative;
+  width: 25%;
+  padding-bottom: 25%;
+  overflow: hidden;
+  background: #4679BD;
+}
+
+.mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
