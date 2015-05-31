@@ -40,7 +40,7 @@ var Game = React.createClass({
       }
 
       if (!this.state.isHumanTurn) {
-        this.aiMakeMove();
+        this.initializeTurn();
 
         this.setState({
           isHumanTurn: !this.state.isHumanTurn,
@@ -73,10 +73,13 @@ var Game = React.createClass({
 
     if (winningLane) {
       this.endGame(this.state.gridMarks[winningLane[0]]);
+
     } else if (!winningLane && this.state.turn === this.state.gridMarks.length) {
       this.endGame();
+
     } else {
       return false;
+
     }
   },
 
@@ -85,41 +88,48 @@ var Game = React.createClass({
 
     if (mark === aiMark) {
       alert("Game Theory Optimal bot wins!" + resetMessage);
+
     } else if (mark === playerMark) {
       alert("You won! But this shouldn't have happened." + resetMessage);
+
     } else if (!mark) {
       alert("Draw!" + resetMessage);
+
     }
 
-    this.setState({gameOver: true})
+    this.setState({gameOver: true});
   },
 
-  aiMakeMove: function() {
-    var mark = '';
-
+  initializeTurn: function() {
+    var markIndex = '';
     var winAttempt = this.aiAttemptVictory();
     var preventDefeat = this.aiPreventDefeat();
-
-    if (this.state.aiWinPossible && winAttempt) {
-      mark = winAttempt;
-    } else if (preventDefeat) {
-      mark = preventDefeat;
-    } else {
-      mark = GridHelper.cornerCells.find(function(cell) {
-        var cellValue = this.state.gridMarks[cell];
-
-        return (cellValue === '' || !cellValue === this.state.playerMark);
-      }.bind(this));
-    }
-
-
     var newGrid = this.state.gridMarks.slice();
 
-    newGrid[mark] = this.state.aiMark;
+    if (this.state.aiWinPossible && winAttempt) { // Attempt to win if possible
+      markIndex = winAttempt;
 
-    this.setState({
-      gridMarks: newGrid
-    });
+    } else if (preventDefeat) { // Block player win attempt
+      markIndex = preventDefeat;
+
+    } else { // Take a corner
+      markIndex = this.aiExecuteNeutralManeuver();
+
+    }
+
+    newGrid[markIndex] = this.state.aiMark;
+
+    this.setState({gridMarks: newGrid});
+  },
+
+  aiAttemptDecisiveAction: function(lane, indices) {
+    if (lane && indices) {
+      return indices.find(function(cell) {
+        return lane.indexOf(cell) > -1;
+      });
+    } else {
+      return false;
+    }
   },
 
   aiPreventDefeat: function() {
@@ -140,13 +150,7 @@ var Game = React.createClass({
       return counter === 2
     }.bind(this));
 
-    if (dangerLane && unmarkedIndices) {
-      return unmarkedIndices.find(function(cell) {
-        return dangerLane.indexOf(cell) > -1;
-      });
-    } else {
-      return false;
-    }
+    return this.aiAttemptDecisiveAction(dangerLane, unmarkedIndices);
   },
 
   // iterate over possible lanes, check if any lane has two aiMarks and zero playermarks. if not, return false. else, return integer (index)
@@ -174,15 +178,16 @@ var Game = React.createClass({
         return counter === 2
       }.bind(this));
 
-      if (winningLane && unmarkedIndices) {
-        return unmarkedIndices.find(function(cell) {
-          return winningLane.indexOf(cell) > -1;
-        });
-      } else {
-        return false;
-      }
-
+      return this.aiAttemptDecisiveAction(winningLane, unmarkedIndices);
     }
+  },
+
+  aiExecuteNeutralManeuver: function() {
+    GridHelper.cornerCells.find(function(cell) {
+      var cellValue = this.state.gridMarks[cell];
+
+      return (cellValue === '' || !cellValue === this.state.playerMark);
+    }.bind(this));
   }
 
 });
