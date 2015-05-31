@@ -1,21 +1,91 @@
+body {
+  font-family: 'Roboto';
+  background: #FFF3E0;
+  font-size: 24px;
+}
+
+#app {
+  text-align: center;
+}
+
 .grid {
   width: 100%;
-  max-width: 960px;
+  max-width: 760px;
+  text-align: center;
+  margin: auto;
+}
+
+h1 {
+  color: #37474F;
+  font-weight: 300;
+}
+
+a {
+  margin-bottom: 20px;
+  text-decoration: none;
+  color: #1E88E5;
+  font-weight: 300;
+}
+
+a:hover {
+  color: #7aabe0;
 }
 
 .cell {
   display: inline-block;
-  border: 1px solid white;
-  background: #ccc;
   position: relative;
   width: 25%;
   padding-bottom: 25%;
   overflow: hidden;
-  background: #4679BD;
+  background: #B3E5FC;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  border-radius: 8px;
+  margin: 2px 5px;
+}
+
+.cell:hover {
+  background: #81D4FA;
 }
 
 .mark {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: 33%;
+  top: 7%;
+  color: white;
+  font-size: 4.4em;
+  font-family: 'Indie Flower';
+}
+
+@media (max-width: 480px) {
+  .mark {
+    font-size: 2em;
+  }
+}
+
+.X, .O {
+  background: #B0BEC5;
+}
+
+.X:hover, .O:hover {
+  cursor: default;
+  background: #B0BEC5;
+}
+
+.X span {
+  color: #ffc107;
+}
+
+.O span {
+  color: #ff5177;
+}
+
+.credit {
+  position: fixed;
+  margin: 0;
+  right: 10px;
+  bottom: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #1E88E5;
 }

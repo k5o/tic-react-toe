@@ -8,12 +8,8 @@ var Cell = React.createClass({
   },
 
   render: function() {
-    var owner;
-    if (this.props.mark === playerMark) { owner = 'player' }
-    else if (this.props.mark === aiMark) { owner = 'AI' }
-
     return (
-      <div className="cell" onClick={this.handleClick} data-marked-by={owner}>
+      <div className={"cell " + this.props.mark} onClick={this.handleClick} >
         <span className="mark">
           {this.props.mark}
         </span>

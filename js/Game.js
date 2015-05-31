@@ -28,6 +28,12 @@ var Game = React.createClass({
     }
   },
 
+  resetGrid: function(event) {
+    event.preventDefault();
+
+    this.setState(this.getInitialState());
+  },
+
   updateGrid: function(index) {
     if (this.state.isHumanTurn && !this.state.gameOver) {
       var newGrid = this.state.gridMarks.slice();
@@ -65,16 +71,16 @@ var Game = React.createClass({
   },
 
   endGame: function(mark) {
-    var resetMessage = " Click Reset to try again.";
+    var resetMessage = " Click Reset to play again.";
 
     if (mark === aiMark) {
-      alert("Game Theory Optimal bot wins!" + resetMessage);
+      alert("You lost! Game Theory Optimal Bot can never lose!" + resetMessage);
 
     } else if (mark === playerMark) {
-      alert("You won! But this shouldn't have happened." + resetMessage);
+      alert("You won! Nice Hax." + resetMessage);
 
     } else if (!mark) {
-      alert("Draw!" + resetMessage);
+      alert("Draw! Is that the best you can do?" + resetMessage);
 
     }
 
@@ -97,8 +103,6 @@ var Game = React.createClass({
       markIndex = this.aiRespondWithClosest();
 
     }
-
-    debugger
 
     newGrid[markIndex] = this.state.aiMark;
 
@@ -147,6 +151,7 @@ var Game = React.createClass({
     var cornerCells = GridHelper.cornerCells();
     var takeCornerCell;
 
+    // Respond with blocking corner to prevent knight-shaped pincer
     if (previousMove < 4) {
       takeCornerCell = cornerCells.slice(0, 2).find(this.isCellAvailable);
     } else {
@@ -155,10 +160,8 @@ var Game = React.createClass({
 
 
     if (takeCornerCell > -1) { // Favor corner cells
-      debugger
       return takeCornerCell;
     } else { // Fallback to any cell
-      debugger
       return this.state.gridMarks.findIndex(this.isCellEmpty);
     }
   },
@@ -181,8 +184,16 @@ var Game = React.createClass({
     }
 
     return (
-      <div className="grid">
-        {grid}
+      <div>
+        <p>
+          <a href="#" onClick={this.resetGrid}>
+            Reset
+          </a>
+        </p>
+
+        <div className="grid">
+          {grid}
+        </div>
       </div>
     )
   }
